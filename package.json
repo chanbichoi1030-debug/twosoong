@@ -1,0 +1,10 @@
+{
+  "name": "twosoong",
+  "private": true,
+  "type": "module",
+  "description": "today two숭숭 — 투숭이 일일퀘스트 & 타임머신 (PWA + Apple Watch notifications)",
+  "dependencies": {
+    "@netlify/blobs": "11.1.4",
+    "web-push": "3.6.7"
+  }
+}
