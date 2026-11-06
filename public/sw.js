@@ -1,5 +1,5 @@
 // today two숭숭 service worker: offline cache + 투숭이 notifications.
-const VERSION = "twosoong-v2";
+const VERSION = "twosoong-v3";
 const CORE = ["./", "index.html", "manifest.json", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

@@ -27,11 +27,12 @@ body{-webkit-tap-highlight-color:transparent}
 </head>
 <body>
 <style>
-/* Layout: three hash views in one narrow column — home (two big mode cards), daily quest (banana monkey), time machine (ribbon monkey + stopwatch + log). */
+/* Layout: full-screen meadow home with a SELECT button, a menu of four modes, then one narrow column per mode (daily quest, time machine, OPIc teacher). */
 :root{
   --bg:#e8f4ff; --surface:#ffffff; --ink:#1d3a5f; --muted:#5d7c9c; --line:#c9e0f6;
   --banana:#ffd23f; --banana-ink:#1f5fa8; --stage:#cde7ff; --danger:#d4524a;
   --sky:#4aa8ff; --sky-soft:#dcefff; --sky-deep:#1f6fd1; --ribbon:#ff7eb6;
+  --c-plan:#cfe6ff; --c-meet:#ffd6e8; --c-anniv:#fff0b8; --c-todo:#d3f0d9; --c-text:#1d3a5f;
   --f-display:"Dongle",system-ui,sans-serif;
   --f-body:"Dongle",system-ui,-apple-system,sans-serif;
   --f-pixel:"Dongle",system-ui,sans-serif;
@@ -39,11 +40,13 @@ body{-webkit-tap-highlight-color:transparent}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0e1a2a; --surface:#16273b; --ink:#e6f2ff; --muted:#93b2d1; --line:#2a4564;
   --banana:#ffd23f; --banana-ink:#9fd0ff; --stage:#1a3654; --danger:#f0857b;
-  --sky:#5cb4ff; --sky-soft:#1d3a5c; --sky-deep:#8cc8ff; --ribbon:#ff8fc2; color-scheme:dark}}
+  --sky:#5cb4ff; --sky-soft:#1d3a5c; --sky-deep:#8cc8ff; --ribbon:#ff8fc2;
+  --c-plan:#1f4670; --c-meet:#5a2742; --c-anniv:#56481a; --c-todo:#22492d; --c-text:#e6f2ff; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1a2a; --surface:#16273b; --ink:#e6f2ff; --muted:#93b2d1; --line:#2a4564;
   --banana:#ffd23f; --banana-ink:#9fd0ff; --stage:#1a3654; --danger:#f0857b;
-  --sky:#5cb4ff; --sky-soft:#1d3a5c; --sky-deep:#8cc8ff; --ribbon:#ff8fc2; color-scheme:dark}
+  --sky:#5cb4ff; --sky-soft:#1d3a5c; --sky-deep:#8cc8ff; --ribbon:#ff8fc2;
+  --c-plan:#1f4670; --c-meet:#5a2742; --c-anniv:#56481a; --c-todo:#22492d; --c-text:#e6f2ff; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:22px;line-height:1.2;
@@ -62,9 +65,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .daynav button[disabled]{opacity:.4;cursor:default}
 
 /* home */
-.meadow{position:relative;border:3px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 5px 0 var(--ink);background:#8fd0ff}
-.meadow canvas{display:block;width:100%;max-width:100%;aspect-ratio:120/84;image-rendering:pixelated;image-rendering:crisp-edges}
-.meadow-title{position:absolute;left:0;right:0;top:5%;display:flex;flex-direction:column;align-items:center;text-align:center;pointer-events:none}
+html.home-mode{padding-top:0!important;padding-bottom:0!important}
+html.home-mode body{padding-left:0;padding-right:0;background:#74c06c}
+#view-home{position:relative;max-width:560px;margin:0 auto;height:100vh;height:100dvh;overflow:hidden}
+.meadow{position:absolute;inset:0;overflow:hidden;background:#8fd0ff}
+.meadow canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.meadow-title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 6vh);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;pointer-events:none;padding-inline:16px}
+.selectbar{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 7vh);display:flex;justify-content:center;padding-inline:16px}
+.selectbtn{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;letter-spacing:.08em;text-decoration:none;color:#1d3a5f;background:#ffffff;border:3px solid #1d3a5f;border-radius:16px;padding:2px 34px 0;box-shadow:0 6px 0 #1d3a5f;display:inline-flex;align-items:center;gap:12px;transition:transform .1s,box-shadow .1s}
+.selectbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #1d3a5f}
+.selectbtn .tri{font-size:26px;color:#ff7eb6;animation:nudge 1s steps(2) infinite}
+@keyframes nudge{50%{transform:translateX(5px)}}
 .meadow-title h1{font-family:var(--f-display);font-weight:700;font-size:clamp(44px,13vw,70px);line-height:.85;margin:0;color:#1f5fa8;text-shadow:0 2px 0 #fff,2px 0 0 #fff,-2px 0 0 #fff,0 -2px 0 #fff}
 .meadow-title p{margin:0;font-size:21px;color:#1d3a5f;background:rgba(255,255,255,.7);border-radius:999px;padding:0 10px}
 .tabrow{display:flex;justify-content:center;margin-top:-30px;position:relative;z-index:1}
@@ -183,6 +194,65 @@ form.add select{border:2px solid var(--line);background:var(--bg);color:var(--in
 .log .n{flex:1;min-width:0;overflow-wrap:anywhere}
 .log .d{font-weight:700;color:var(--sky-deep);white-space:nowrap}
 .muted{color:var(--muted);margin:0}
+.navbtn{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font-size:26px;line-height:1;padding:2px 14px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal .wd{font-size:16px;color:var(--muted);text-align:center}
+.cal .wd.sun,.dc.sun .n{color:var(--danger)}
+.cal .wd.sat,.dc.sat .n{color:var(--sky-deep)}
+.dc{min-height:66px;min-width:0;border:2px solid transparent;background:var(--bg);border-radius:8px;padding:3px 2px;display:flex;flex-direction:column;align-items:stretch;gap:2px;overflow:hidden;color:var(--ink)}
+.dc .n{font-size:17px;line-height:1.1;padding:0 3px;align-self:flex-start}
+.dc.out{opacity:.35}
+.dc.today .n{background:var(--sky);color:#fff!important;border-radius:999px;padding:0 6px}
+.dc.sel{border-color:var(--ink)}
+.ev{display:block;font-size:14px;line-height:1.15;border-radius:4px;padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--c-text);text-align:left}
+.ev.plan,.dchip.plan,.lg.plan{background:var(--c-plan)}
+.ev.meet,.dchip.meet,.lg.meet{background:var(--c-meet)}
+.ev.anniv,.dchip.anniv,.lg.anniv{background:var(--c-anniv)}
+.ev.todo,.dchip.todo,.lg.todo{background:var(--c-todo)}
+.more{font-size:13px;color:var(--muted);padding-left:3px;text-align:left}
+.legend .lg{width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-right:3px}
+.devt{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:6px 10px;width:100%;border:0;color:var(--ink);text-align:left}
+.devt .dchip{flex:none;font-size:17px;border-radius:999px;padding:0 8px;color:var(--c-text)}
+.devt .dt{flex:none;font-size:19px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:3.6em}
+.devt .dd{flex:none;font-weight:700;color:var(--sky-deep);min-width:2.6em}
+.devt .dn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;text-align:left;overflow-wrap:anywhere}
+.devt .dn small{font-size:18px;color:var(--muted)}
+.dform{display:flex;flex-direction:column;gap:6px;border-top:2px dashed var(--line);padding-top:10px}
+.dform input,.dform select{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;font:inherit;font-size:22px;padding:2px 10px;min-width:0}
+.dform input[type=time]{font-family:system-ui,sans-serif;font-size:16px;flex:1 1 120px}
+.drow{display:flex;gap:6px;flex-wrap:wrap}
+.drow select{flex:0 0 auto}
+.drow .btn{flex:1 0 80px}
+.qcard{width:100%;background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.qmeta{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.qtype{font-size:19px;background:var(--sky);color:#fff;border-radius:999px;padding:0 10px}
+.qtext{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:19px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+.qbtns{display:flex;gap:8px;flex-wrap:wrap}
+.qbtns .btn{flex:1 1 120px;font-size:24px;padding:0 10px}
+.chips button.on{background:var(--sky);border-color:var(--sky);color:#fff}
+.rectime{font-family:var(--f-display);font-weight:700;font-size:28px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.micbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;border:3px solid var(--ink);border-radius:999px;background:var(--ribbon);color:#3a0d22;font-family:var(--f-display);font-weight:700;font-size:32px;padding:6px 16px;box-shadow:0 4px 0 var(--ink)}
+.micbtn .dot{width:18px;height:18px;border-radius:50%;background:#e2453c;border:2px solid #3a0d22}
+.micbtn[aria-pressed="true"]{background:var(--surface);color:var(--ink)}
+.micbtn[aria-pressed="true"] .dot{border-radius:4px;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+#oText{width:100%;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.5;padding:8px 10px;resize:vertical}
+.grade{display:flex;align-items:center;gap:14px}
+.lvl{font-family:var(--f-display);font-weight:700;font-size:48px;line-height:1;background:var(--sky);color:#fff;border-radius:14px;padding:6px 14px;border:3px solid var(--ink)}
+.score{font-family:var(--f-display);font-weight:700;font-size:36px;line-height:1}
+.score small{font-size:20px;color:var(--muted)}
+.fix{background:var(--bg);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.fix .cat{font-size:17px;color:var(--sky-deep)}
+.fix .o{font-family:Georgia,serif;font-size:16px;color:var(--danger);text-decoration:line-through;overflow-wrap:anywhere}
+.fix .b{font-family:Georgia,serif;font-size:16px;color:#2f8f5b;overflow-wrap:anywhere}
+.fix .w{font-size:19px;color:var(--muted)}
+.model{font-family:Georgia,serif;font-size:16px;line-height:1.55;background:var(--bg);border-radius:10px;padding:10px;margin:0;overflow-wrap:anywhere}
+.expr{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;background:var(--bg);border-radius:10px;padding:6px 10px}
+.expr b{font-family:Georgia,serif;font-size:16px;font-weight:600}
+.expr span{font-size:19px;color:var(--muted)}
+.hist{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:6px 10px}
+.hist .q{flex:1;min-width:0;font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:0;padding:0}
+.hist .l{font-weight:700;color:var(--sky-deep)}
 .pushpill{font-size:19px;border-radius:999px;padding:0 10px;background:var(--bg);border:2px solid var(--line);color:var(--muted);white-space:nowrap}
 .pushpill.on{background:var(--sky);border-color:var(--sky);color:#fff}
 
@@ -193,13 +263,22 @@ form.add select{border:2px solid var(--line);background:var(--bg);color:var(--in
 </style>
 
 <!-- HOME -->
-<div class="wrap" id="view-home">
+<div id="view-home">
   <section class="meadow">
-    <canvas id="cvMeadow" width="120" height="84" role="img" aria-label="초원에서 사는 투숭이들: 바나나 든 투숭이, 실험복 입은 투숭이, 리본 단 투숭이, 자고 있는 투숭이"></canvas>
+    <canvas id="cvMeadow" width="120" height="260" role="img" aria-label="초원에서 사는 투숭이들: 바나나 든 투숭이, 실험복 입은 투숭이, 리본 단 투숭이, 자고 있는 투숭이"></canvas>
     <div class="meadow-title"><h1>today two숭숭</h1><p id="homeDate">오늘</p></div>
+    <div class="selectbar">
+      <a class="selectbtn" href="#menu"><span class="tri" aria-hidden="true">▶</span>SELECT</a>
+    </div>
   </section>
-  <div class="tabrow"><button type="button" class="tab" id="sectionTab" aria-expanded="false" aria-controls="modes">섹션 <span class="caret" aria-hidden="true">▾</span></button></div>
-  <nav class="modes" id="modes" aria-label="섹션 선택" hidden>
+</div>
+
+<!-- MENU -->
+<div class="wrap" id="view-menu" hidden>
+  <div class="top">
+    <div class="top-l"><a class="back" href="#home" aria-label="초원으로">‹ 초원</a><span class="date">어디로 갈까?</span></div>
+  </div>
+  <nav class="modes" aria-label="옵션 선택">
     <a class="mode" href="#quest">
       <canvas id="cvHomeQuest" width="40" height="32" aria-hidden="true"></canvas>
       <span class="mode-txt"><b>투숭이 일일퀘스트</b><span>퀘스트 깨고 바나나 먹이기</span><span class="pill" id="homeQuestPill">바나나 0개 · 꼬르륵숭이</span></span>
@@ -210,14 +289,63 @@ form.add select{border:2px solid var(--line);background:var(--bg);color:var(--in
       <span class="mode-txt"><b>투숭이 타임머신</b><span>지금 하는 일 적고 시간 재기</span><span class="pill" id="homeTimerPill">오늘 기록 0분</span></span>
       <span class="go" aria-hidden="true">›</span>
     </a>
+    <a class="mode" href="#opic">
+      <canvas id="cvHomeOpic" width="40" height="32" aria-hidden="true"></canvas>
+      <span class="mode-txt"><b>투숭이 오픽 선생님</b><span>말로 대답하고 채점받기</span><span class="pill" id="homeOpicPill">아직 연습 기록이 없어요</span></span>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
+    <a class="mode" href="#diary">
+      <canvas id="cvHomeDiary" width="40" height="32" aria-hidden="true"></canvas>
+      <span class="mode-txt"><b>투숭이 다이어리</b><span>한 달 달력에 일정과 약속 적기</span><span class="pill" id="homeDiaryPill">잡힌 일정이 없어요</span></span>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
   </nav>
   <p class="note" id="syncNote">저장소에 연결하는 중…</p>
+</div>
+
+<!-- DIARY -->
+<div class="wrap" id="view-diary" hidden>
+  <div class="top">
+    <div class="top-l"><a class="back" href="#menu" aria-label="메뉴로">‹ 메뉴</a><span class="date">투숭이 다이어리</span></div>
+  </div>
+  <section class="stage diary-stage" aria-live="polite">
+    <div class="bubble" id="dBubble">오늘은 일정이 없어요. 푹 쉬자!</div>
+    <canvas id="cvDiary" width="40" height="32" role="img" aria-label="달력을 든 투숭이"></canvas>
+  </section>
+  <section class="panel">
+    <div class="toolbar">
+      <button type="button" class="navbtn" id="dPrev" aria-label="이전 달">‹</button>
+      <h2 id="dMonth" style="justify-content:center">2026년 11월</h2>
+      <button type="button" class="navbtn" id="dNext" aria-label="다음 달">›</button>
+    </div>
+    <div class="cal" id="dCal"></div>
+    <div class="legend"><span><i class="lg plan"></i>일정</span><span><i class="lg meet"></i>약속</span><span><i class="lg anniv"></i>기념일</span><span><i class="lg todo"></i>할 일</span></div>
+  </section>
+  <section class="panel" id="dDay">
+    <div class="toolbar"><h2 id="dDayTitle">오늘</h2><button type="button" class="link" id="dToday">오늘로</button></div>
+    <ul id="dList"></ul>
+    <form id="dForm" class="dform" autocomplete="off">
+      <input id="dTitle" maxlength="40" placeholder="일정이나 약속 (예: 민지랑 저녁)" aria-label="일정 이름">
+      <div class="drow">
+        <input id="dTime" type="time" aria-label="시간, 비워 두면 하루 종일">
+        <select id="dCat" aria-label="종류"><option value="plan">일정</option><option value="meet">약속</option><option value="anniv">기념일</option><option value="todo">할 일</option></select>
+        <button type="submit" class="btn" id="dSubmit">추가</button>
+      </div>
+      <input id="dMemo" maxlength="80" placeholder="메모: 장소, 준비물 등 (선택)" aria-label="메모">
+      <p class="muted" style="font-size:18px;margin:0">시간을 비워 두면 '하루 종일'로 적혀요.</p>
+      <button type="button" class="link" id="dCancelEdit" hidden>수정 취소</button>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>다가오는 일정 <small>30일</small></h2>
+    <ul id="dUpcoming"></ul>
+  </section>
 </div>
 
 <!-- QUEST -->
 <div class="wrap" id="view-quest" hidden>
   <div class="top">
-    <div class="top-l"><a class="back" href="#home" aria-label="홈으로">‹ 홈</a><span class="date" id="dateLbl">오늘</span></div>
+    <div class="top-l"><a class="back" href="#menu" aria-label="메뉴로">‹ 메뉴</a><span class="date" id="dateLbl">오늘</span></div>
     <div class="daynav">
       <button id="prevDay" type="button" aria-label="전날">‹</button>
       <button id="todayBtn" type="button">오늘</button>
@@ -253,10 +381,49 @@ form.add select{border:2px solid var(--line);background:var(--bg);color:var(--in
   </section>
 </div>
 
+<!-- OPIC -->
+<div class="wrap" id="view-opic" hidden>
+  <div class="top">
+    <div class="top-l"><a class="back" href="#menu" aria-label="메뉴로">‹ 메뉴</a><span class="date">투숭이 오픽 선생님</span></div>
+  </div>
+  <section class="stage" aria-live="polite">
+    <div class="bubble" id="oBubble">질문을 듣고 마이크를 눌러 대답해 봐!</div>
+    <canvas id="cvOpic" width="40" height="32" role="img" aria-label="안경 쓴 투숭이 선생님"></canvas>
+    <div class="qcard">
+      <div class="qmeta"><span class="qtype" id="oType">자기소개</span><span class="muted" id="oNo"></span></div>
+      <p class="qtext" id="oQuestion" lang="en">Let's start the interview now. Tell me something about yourself.</p>
+      <div class="qbtns">
+        <button type="button" class="btn ghost" id="oListen">🔊 질문 듣기</button>
+        <button type="button" class="btn ghost" id="oNext">다른 질문</button>
+      </div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="toolbar"><h2>목표 등급</h2><span class="muted" style="font-size:19px">채점 기준이 돼요</span></div>
+    <div class="chips" id="oTargets"></div>
+    <div class="chips" id="oTypes"></div>
+  </section>
+  <section class="panel">
+    <div class="toolbar"><h2>내 대답</h2><span class="rectime" id="oTime">00:00</span></div>
+    <button type="button" class="micbtn" id="oMic" aria-pressed="false"><span class="dot"></span><span id="oMicLabel">말하기 시작</span></button>
+    <textarea id="oText" rows="5" lang="en" placeholder="마이크 버튼을 누르고 영어로 대답해 보세요. 키보드의 받아쓰기(🎤)로 입력하거나 직접 고쳐도 돼요."></textarea>
+    <div class="ctrls">
+      <button type="button" class="btn" id="oGrade">투숭이한테 채점받기</button>
+      <button type="button" class="link" id="oClear" style="flex:0 0 auto">지우기</button>
+    </div>
+    <p class="muted" style="font-size:18px">음성을 글자로 바꿔서 채점해요. 발음과 억양은 채점하지 않아요. 오픽은 질문마다 1~2분 정도 말하는 게 좋아요.</p>
+  </section>
+  <section class="panel" id="oResult" hidden></section>
+  <section class="panel" id="oHistoryPanel" hidden>
+    <h2>최근 연습</h2>
+    <ul id="oHistory"></ul>
+  </section>
+</div>
+
 <!-- TIMER -->
 <div class="wrap" id="view-timer" hidden>
   <div class="top">
-    <div class="top-l"><a class="back" href="#home" aria-label="홈으로">‹ 홈</a><span class="date">투숭이 타임머신</span></div>
+    <div class="top-l"><a class="back" href="#menu" aria-label="메뉴로">‹ 메뉴</a><span class="date">투숭이 타임머신</span></div>
   </div>
   <section class="stage" aria-live="polite">
     <div class="bubble" id="tBubble">오늘은 뭐 할 거야?</div>
@@ -339,10 +506,12 @@ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 let tick=0;
 // scene kinds: hungry/full/strong/fire (quest), ribbon-idle/ribbon-run/ribbon-pause (timer)
 function drawScene(cv,kind){
-  const cx=cv.getContext("2d");if(kind==="meadow"){drawMeadow(cx);return}cx.clearRect(0,0,40,32);
+  const cx=cv.getContext("2d");if(kind==="meadow"){drawMeadowTall(cx,cv.height);return}cx.clearRect(0,0,40,32);
   const bob=reduce?0:(Math.floor(tick/12)%2);
   if(kind==="fire")for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){const v=fire[y*FW+x];if(v>0){cx.fillStyle=FP[v];cx.fillRect(x,y,1,1)}}
   if(kind==="strong"||kind==="fire"){if(Math.floor(tick/10)%2===0||reduce){cx.fillStyle="#ffd23f";[[4,6],[3,5],[35,6],[36,5],[5,3],[34,3]].forEach(([x,y])=>cx.fillRect(x,y,1,1))}}
+  if(kind==="diary"){drawDiaryMonkey(cx);return}
+  if(kind.startsWith("teacher")){drawTeacher(cx,kind);return}
   if(kind.startsWith("act-")){drawActivity(cx,kind);return}
   if(kind.startsWith("ribbon")){
     const run=kind==="ribbon-run",pause=kind==="ribbon-pause";
@@ -410,6 +579,18 @@ LAB[13][10]="c";LAB[14][10]="c";LAB[13][12]="c";LAB[13][13]="c";LAB[12][13]="S";
 const FLASK=["..DgD..","..DgD..",".DgggD.","DgMMMgD","DMMmMMD",".DDDDD."];
 const st=r=>r.map(x=>x.join(""));
 function hill(cx,c,base,a1,f1,a2,f2,ph){for(let x=0;x<120;x++){const h=Math.round(base-a1*Math.sin(x/f1+ph)-a2*Math.sin(x/f2));rect(cx,c,x,h,1,84-h)}}
+// full-screen meadow: extra sky above and grass below the 120x84 scene
+function drawMeadowTall(cx,H){
+  const t=reduce?0:tick,dy=Math.max(0,Math.round((H-84)*0.6));
+  if(dy>0){const top=["#66b8ff","#72bfff","#7ec6ff","#8acdff"],band=Math.ceil(dy/top.length);top.forEach((c,i)=>rect(cx,c,0,i*band,120,band+1));
+    for(const[x0,f]of[[24,.3],[86,.62],[50,.85]]){const y=Math.round(dy*f);if(y<6)continue;const x=Math.round(((x0+t/40)%160)-20);rect(cx,"#ffffff",x,y,12,3);rect(cx,"#ffffff",x+3,y-2,6,2);rect(cx,"#e6f4ff",x,y+2,12,1)}}
+  cx.save();cx.translate(0,dy);drawMeadow(cx);cx.restore();
+  const gy=dy+84;if(gy<H){rect(cx,"#74c06c",0,gy,120,H-gy);const gh=H-gy;
+    for(let i=0;i<Math.round(gh/2);i++){const x=(i*41+7)%118,y=gy+2+((i*29)%Math.max(1,gh-3));const sw=Math.floor(t/18+i)%2;rect(cx,"#5aa857",x,y,1,2);rect(cx,"#5aa857",x+1+sw,y-1,1,2)}
+    [[14,.3,"#ffd23f"],[98,.45,"#ffffff"],[40,.7,"#ff7eb6"],[74,.2,"#ffffff"]].forEach(([x,f,c])=>{const y=gy+3+Math.round((gh-6)*f);rect(cx,"#3f8f45",x,y,1,2);rect(cx,c,x-1,y-1,3,1);rect(cx,c,x,y-2,1,3);rect(cx,"#ffd23f",x,y-1,1,1)})}
+}
+function sizeMeadow(){const el=$("cvMeadow");const r=el.getBoundingClientRect();if(!r.width||!r.height)return;const H=Math.max(84,Math.min(400,Math.round(120*r.height/r.width)));if(el.height!==H)el.height=H}
+window.addEventListener("resize",()=>{if(view==="home")sizeMeadow()});
 function drawMeadow(cx){
   const t=reduce?0:tick;
   ["#8fd0ff","#9fd8ff","#b1e0ff","#c4e8ff","#d6f0ff"].forEach((c,i)=>rect(cx,c,0,i*8,120,8));rect(cx,"#d6f0ff",0,40,120,10);
@@ -616,6 +797,9 @@ function stopTimer(){
   $("actTitle").value="";tSel=key(new Date());renderAll();saveT();
 }
 
+/* claude.ai artifact preview vs. installed app */
+const IS_ART=!!(window.claude&&window.claude.use);
+
 /* ================= watch notifications (Web Push) ================= */
 const API="/api";
 const deviceId=(()=>{try{let d=localStorage.getItem("tt-device");if(!d){d=(crypto.randomUUID?crypto.randomUUID():("d"+Date.now().toString(36)+Math.random().toString(36).slice(2,10)));localStorage.setItem("tt-device",d)}return d}catch(e){return "d"+Date.now().toString(36)+Math.random().toString(36).slice(2,10)}})();
@@ -660,7 +844,260 @@ async function disablePush(){
 $("pushOn").addEventListener("click",enablePush);
 $("pushOff").addEventListener("click",disablePush);
 $("pushTest").addEventListener("click",async()=>{try{const r=await post("/push-test",{delay:60});if(!r.ok)throw 0;toast("1~2분 뒤에 알림이 와요. 아이폰을 잠가 두세요!")}catch(e){toast("테스트를 보내지 못했어요")}});
-renderPush();
+if(IS_ART){$("pushPanel").hidden=true}else{renderPush()}
+
+/* ================= diary ================= */
+let DI={events:[]};   // doc "diary": events [{id,date,time,title,cat,memo}]
+const DCATS={plan:"일정",meet:"약속",anniv:"기념일",todo:"할 일"};
+let dMonth=key(new Date()).slice(0,7),dSel=key(new Date()),dEditing=null;
+const saveDI=()=>saveDoc("diary",DI);
+function evOn(k){return DI.events.filter(e=>e.date===k).sort((a,b)=>(a.time||"").localeCompare(b.time||""))}
+function upcoming(){const today=key(new Date()),end=shift(today,30);return DI.events.filter(e=>e.date>=today&&e.date<=end).sort((a,b)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||"")))}
+function dLabelShort(k){const d=parse(k);return `${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`}
+function drawDiaryMonkey(cx){
+  cx.clearRect(0,0,40,32);
+  const t=reduce?0:tick,bob=reduce?0:(Math.floor(t/12)%2);
+  paint(cx,SPR.full.map(r=>r.join("")),8,11+bob);
+  paint(cx,BOW,17,8+bob);
+  const x=27,y=12+bob;
+  rect(cx,"#1d3a5f",x,y,11,12);rect(cx,"#e2453c",x+1,y+1,9,3);rect(cx,"#ffffff",x+1,y+4,9,7);
+  rect(cx,"#1d3a5f",x+3,y-1,1,2);rect(cx,"#1d3a5f",x+7,y-1,1,2);
+  for(let r=0;r<3;r++)for(let c=0;c<4;c++)rect(cx,"#9fb3c8",x+2+c*2,y+5+r*2,1,1);
+  const k=reduce?0:Math.floor(t/30)%2;rect(cx,k?"#ff7eb6":"#e2453c",x+5,y+7,2,2);
+  rect(cx,PAL.L,x-1,y+8,2,2);
+}
+function renderDiaryPill(){
+  const today=key(new Date()),tn=evOn(today).length,up=upcoming().filter(e=>e.date>today||(e.date===today&&false));
+  const next=upcoming().find(e=>e.date>today);
+  $("homeDiaryPill").textContent=tn?`오늘 일정 ${tn}개`+(next?` · 다음 ${next.title}`:""):next?`다음: ${next.title} · ${dLabelShort(next.date)}`:"잡힌 일정이 없어요";
+}
+function renderDiary(){
+  const today=key(new Date());
+  const [y,m]=dMonth.split("-").map(Number);
+  $("dMonth").textContent=`${y}년 ${m}월`;
+  const first=new Date(y,m-1,1),start=new Date(y,m-1,1-first.getDay()),days=new Date(y,m,0).getDate();
+  const cells=Math.ceil((first.getDay()+days)/7)*7;
+  let h=WD.split("").map((w,i)=>`<span class="wd${i===0?" sun":i===6?" sat":""}">${w}</span>`).join("");
+  for(let i=0;i<cells;i++){
+    const c=new Date(start);c.setDate(start.getDate()+i);const k=key(c),evs=evOn(k),wd=c.getDay();
+    h+=`<button type="button" class="dc${c.getMonth()!==m-1?" out":""}${k===today?" today":""}${k===dSel?" sel":""}${wd===0?" sun":wd===6?" sat":""}" data-dday="${k}" aria-label="${c.getMonth()+1}월 ${c.getDate()}일, 일정 ${evs.length}개"><span class="n">${c.getDate()}</span>${evs.slice(0,2).map(e=>`<span class="ev ${e.cat}">${esc(e.title)}</span>`).join("")}${evs.length>2?`<span class="more">+${evs.length-2}</span>`:""}</button>`;
+  }
+  $("dCal").innerHTML=h;
+  $("dDayTitle").textContent=dlabel(dSel)+(dSel===today?" · 오늘":"");
+  $("dToday").hidden=dSel===today&&dMonth===today.slice(0,7);
+  const list=evOn(dSel);
+  $("dList").innerHTML=list.length?list.map(e=>`<li class="devt"><span class="dchip ${e.cat}">${DCATS[e.cat]||"일정"}</span><span class="dt">${e.time?esc(e.time):"하루 종일"}</span><span class="dn"><b>${esc(e.title)}</b>${e.memo?`<small>${esc(e.memo)}</small>`:""}</span><button type="button" class="link" data-dedit="${e.id}">수정</button><button type="button" class="del" style="display:inline" data-ddel="${e.id}" aria-label="${esc(e.title)} 삭제">×</button></li>`).join(""):`<li class="muted">이날은 아직 일정이 없어요. 아래에 적어서 추가해요.</li>`;
+  const up=upcoming().slice(0,8);
+  $("dUpcoming").innerHTML=up.length?up.map(e=>{const dd=Math.round((parse(e.date)-parse(today))/864e5);return `<li><button type="button" class="devt" data-dday="${e.date}"><span class="dd">${dd===0?"오늘":dd===1?"내일":"D-"+dd}</span><span class="dchip ${e.cat}">${DCATS[e.cat]||"일정"}</span><span class="dn"><b>${esc(e.title)}</b><small>${dLabelShort(e.date)}${e.time?" "+e.time:" 하루 종일"}</small></span></button></li>`}).join(""):`<li class="muted">앞으로 30일 동안 잡힌 일정이 없어요.</li>`;
+  const tn=evOn(today).length,next=up.find(e=>e.date>today);
+  $("dBubble").textContent=tn?`오늘 일정 ${tn}개! 잊지 말자 📌`:next?`다음 일정은 ${dLabelShort(next.date)} '${next.title}'!`:"오늘은 일정이 없어요. 푹 쉬자!";
+  $("dSubmit").textContent=dEditing?"저장":"추가";$("dCancelEdit").hidden=!dEditing;
+}
+function clearDiaryForm(){dEditing=null;$("dTitle").value="";$("dTime").value="";$("dMemo").value="";$("dCat").value="plan"}
+$("dForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const title=$("dTitle").value.trim();if(!title){toast("일정 이름을 적어 주세요");$("dTitle").focus();return}
+  const ev={id:dEditing||("e"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),date:dSel,time:$("dTime").value||"",title,cat:$("dCat").value,memo:$("dMemo").value.trim()};
+  const i=dEditing?DI.events.findIndex(x=>x.id===dEditing):-1;
+  if(i>=0)DI.events[i]=ev;else DI.events.push(ev);
+  const was=!!dEditing;clearDiaryForm();renderAll();saveDI();toast(was?"일정을 고쳤어요":`${dLabelShort(ev.date)}에 '${title}' 추가!`);
+});
+$("view-diary").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.dday){dSel=b.dataset.dday;dMonth=dSel.slice(0,7);if(dEditing)clearDiaryForm();renderDiary();if(b.closest("#dUpcoming"))$("dDay").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"})}
+  else if(b.dataset.ddel){DI.events=DI.events.filter(x=>x.id!==b.dataset.ddel);if(dEditing===b.dataset.ddel)clearDiaryForm();renderAll();saveDI();toast("일정을 지웠어요")}
+  else if(b.dataset.dedit){const ev=DI.events.find(x=>x.id===b.dataset.dedit);if(!ev)return;dEditing=ev.id;dSel=ev.date;dMonth=ev.date.slice(0,7);$("dTitle").value=ev.title;$("dTime").value=ev.time||"";$("dCat").value=ev.cat||"plan";$("dMemo").value=ev.memo||"";renderDiary();$("dTitle").focus()}
+  else if(b.id==="dPrev"||b.id==="dNext"){const [y,m]=dMonth.split("-").map(Number);const d=new Date(y,m-1+(b.id==="dPrev"?-1:1),1);dMonth=key(d).slice(0,7);renderDiary()}
+  else if(b.id==="dToday"){dSel=key(new Date());dMonth=dSel.slice(0,7);renderDiary()}
+  else if(b.id==="dCancelEdit"){clearDiaryForm();renderDiary()}
+});
+
+/* ================= OPIc teacher ================= */
+const OPIC_Q=[
+ ["자기소개","Let's start the interview now. Tell me something about yourself."],
+ ["묘사","You indicated in the survey that you live in an apartment. Describe your home to me. What does it look like, and which room do you like the most?"],
+ ["습관","What do you usually do at home on weekends? Walk me through a typical weekend from morning to night."],
+ ["과거 경험","Tell me about something memorable that happened at your home. What happened, and why do you still remember it?"],
+ ["묘사","Describe the neighborhood where you live. What kinds of places are there, and what are the people like?"],
+ ["비교·변화","How has your neighborhood changed since you first moved there? Compare how it was before with how it is now."],
+ ["묘사","You said you like listening to music. What kind of music do you enjoy, and who are your favorite singers or musicians?"],
+ ["습관","When and where do you usually listen to music? Tell me about your music listening habits in detail."],
+ ["과거 경험","Tell me about a concert or live performance you went to. Who did you see, and what was the experience like?"],
+ ["묘사","You indicated that you go to the movies. What kinds of movies do you like, and why?"],
+ ["과거 경험","Tell me about the most memorable movie you have seen recently. What was it about, and why did it stay with you?"],
+ ["습관","You said you enjoy going to parks. Which park do you usually go to, and what do you do there?"],
+ ["습관","You indicated that you jog or walk for exercise. When, where, and how often do you do it? Tell me about your routine."],
+ ["과거 경험","Tell me about a time when something unexpected happened while you were exercising or jogging."],
+ ["묘사","Describe a place you like to travel to in your country. What is special about it?"],
+ ["과거 경험","Tell me about your most memorable trip. Where did you go, who did you go with, and what happened?"],
+ ["습관","How do you usually prepare before you go on a trip? Explain the things you do step by step."],
+ ["묘사","Tell me about a store you often go shopping at. What does it look like, and what do you usually buy there?"],
+ ["과거 경험","Tell me about a time you had a problem after buying something, like a broken or wrong item. What did you do?"],
+ ["묘사","What is the weather like in your country? Describe the seasons and tell me which one you like best."],
+ ["비교·변화","How has the weather in your country changed compared to when you were a child?"],
+ ["묘사","Tell me about a piece of technology you use every day, like your phone or laptop. What do you use it for?"],
+ ["비교·변화","How has technology changed the way people communicate? Compare the past and the present."],
+ ["습관","Tell me about your typical day at work or school. What do you do from the morning until you go home?"],
+ ["롤플레이","I'd like to give you a situation. You want to join a gym near your home. Call the gym and ask three or four questions to get the information you need."],
+ ["롤플레이","You are planning to see a movie with a friend this weekend. Call your friend and ask three or four questions to make plans."],
+ ["롤플레이","You bought concert tickets, but you can't go because something came up. Call your friend, explain the situation, and suggest two or three alternatives."],
+ ["롤플레이","You ordered a product online, but the wrong item arrived. Call the store, explain the problem, and ask them to solve it."],
+ ["이슈","Many people say that young people today spend too much time on their smartphones. What do you think about this issue?"],
+ ["이슈","What are some recent changes in the way people shop? Talk about the reasons behind these changes and how people feel about them."],
+];
+const OPIC_TARGETS=["IM2","IM3","IH","AL"];
+const OPIC_TYPES=["전체","자기소개","묘사","습관","과거 경험","비교·변화","롤플레이","이슈"];
+let oIdx=0,oMode="idle",oTarget="IH",oTypeFilter="전체",oBusy=false,oHist=[];
+try{oTarget=localStorage.getItem("tt-opic-target")||"IH";oHist=JSON.parse(localStorage.getItem("tt-opic-history")||"[]")}catch(e){}
+function saveOpicHist(){try{localStorage.setItem("tt-opic-history",JSON.stringify(oHist.slice(0,100)))}catch(e){}}
+function drawTeacher(cx,kind){
+  cx.clearRect(0,0,40,32);
+  const t=reduce?0:tick,bob=reduce?0:(Math.floor(t/12)%2),mode=kind.slice(8);
+  const src=mode==="good"?SPR.full:SPR.base;
+  const g=src.map((r,j)=>j>=11&&j<=15?r.map(c=>c==="B"||c==="L"?"W":c):r.slice());
+  g[11][9]="L";g[11][10]="L";g[12][8]="c";g[12][11]="c";g[13][10]="c";g[14][10]="c";g[12][13]="S";
+  const ly=11+(mode==="listen"?0:bob),lx=10;
+  // little chalkboard
+  rect(cx,"#7a5128",0,8,11,9);rect(cx,"#2f6b4f",1,9,9,7);rect(cx,"#ffffff",2,10,1,1);rect(cx,"#ffffff",3,11,1,1);rect(cx,"#ffffff",4,10,1,1);rect(cx,"#ffffff",6,11,2,1);rect(cx,"#ffd23f",6,13,3,1);
+  rect(cx,"#7a5128",2,17,1,8);rect(cx,"#7a5128",8,17,1,8);
+  paint(cx,g.map(r=>r.join("")),lx,ly);
+  const G="#1d3a5f";
+  for(const ex of[5,11]){[[1,-1],[2,-1],[0,0],[0,1],[3,0],[3,1],[1,2],[2,2]].forEach(([a,b])=>rect(cx,G,lx+ex+a,ly+5+b,1,1));rect(cx,"rgba(180,225,255,.45)",lx+ex+1,ly+5,2,2)}
+  rect(cx,G,lx+9,ly+5,2,1);
+  if(mode==="listen"){const k=reduce?2:Math.floor(t/10)%4;for(let i=0;i<=Math.min(k,2);i++){rect(cx,"#ff7eb6",32+i*2,15-i,1,3+i*2)}}
+  if(mode==="think"){const k=reduce?2:Math.floor(t/15)%4;for(let i=0;i<3;i++){if(i<k)rect(cx,G,31+i*3,7,2,2)}}
+  if(mode==="good"&&(reduce||Math.floor(t/10)%2===0)){rect(cx,"#ffd23f",33,6,1,3);rect(cx,"#ffd23f",32,7,3,1);rect(cx,"#ffd23f",6,4,1,3);rect(cx,"#ffd23f",5,5,3,1)}
+}
+function opicPool(){return OPIC_Q.map((q,i)=>i).filter(i=>oTypeFilter==="전체"||OPIC_Q[i][0]===oTypeFilter)}
+function nextQuestion(){const pool=opicPool();if(pool.length>1){let n;do{n=pool[Math.floor(Math.random()*pool.length)]}while(n===oIdx);oIdx=n}else if(pool.length)oIdx=pool[0];$("oResult").hidden=true;oMode="idle";renderOpic()}
+function speak(text){
+  if(!("speechSynthesis" in window)){toast("이 기기에서는 읽어 주기를 쓸 수 없어요");return}
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=0.95;
+  const v=speechSynthesis.getVoices().find(v=>/^en(-|_)US/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u);
+}
+// ---- speech recognition ----
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,recOn=false,recBase="",recAcc=0,recSeg=0,recTick=null;
+function recSeconds(){return Math.round((recAcc+(recOn?Date.now()-recSeg:0))/1000)}
+function showRecTime(){const s=recSeconds();$("oTime").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function startRec(){
+  if(!SR){toast("이 기기는 음성 인식을 지원하지 않아요. 키보드의 받아쓰기(🎤)로 입력해 주세요");$("oText").focus();return}
+  if("speechSynthesis" in window)speechSynthesis.cancel();
+  recBase=$("oText").value.trim();if(recBase)recBase+=" ";
+  try{
+    rec=new SR();rec.lang="en-US";rec.continuous=true;rec.interimResults=true;
+    rec.onresult=e=>{let fin="",tmp="";for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript.trim()+" ";else tmp+=r[0].transcript}
+      if(fin)recBase+=fin;$("oText").value=(recBase+tmp).trim()};
+    rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){toast("마이크 권한이 필요해요. 설정에서 two숭숭의 마이크를 허용해 주세요");stopRec()}};
+    rec.onend=()=>{if(recOn){try{rec.start()}catch(_){stopRec()}}};
+    rec.start();
+  }catch(e){toast("마이크를 켜지 못했어요. 키보드 받아쓰기로 입력해 주세요");return}
+  recOn=true;recSeg=Date.now();recTick=setInterval(showRecTime,500);oMode="listen";renderOpic();
+}
+function stopRec(){
+  if(recOn){recAcc+=Date.now()-recSeg}
+  recOn=false;clearInterval(recTick);showRecTime();
+  try{rec&&rec.stop()}catch(_){}
+  rec=null;if(oMode==="listen")oMode="idle";renderOpic();
+}
+// ---- grading ----
+async function gradeOpic(){
+  if(recOn)stopRec();
+  const text=$("oText").value.trim();
+  if(text.split(/\s+/).filter(Boolean).length<5){toast("조금 더 길게 대답해 주세요. 오픽은 1~2분 정도 말하는 게 좋아요");return}
+  if(oBusy)return;oBusy=true;oMode="think";renderOpic();
+  const [qtype,question]=OPIC_Q[oIdx];
+  const box=$("oResult");box.hidden=false;box.innerHTML='<p class="muted">투숭이가 대답을 꼼꼼히 읽고 있어요… (10~30초)</p>';
+  try{
+    if(IS_ART){
+      const result=await gradeWithSample(question,qtype,text,recSeconds(),box);
+      oHist.unshift({at:Date.now(),q:question,type:qtype,level:result.level,score:result.score});saveOpicHist();
+      oMode=result.score>=70?"good":"idle";showResult(result);oBusy=false;renderOpic();renderHome();return;
+    }
+    const res=await fetch(API+"/opic-grade",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({deviceId,question,qtype,transcript:text,seconds:recSeconds(),target:oTarget})});
+    if(!res.ok){let m="채점 서버에 연결하지 못했어요.";try{const j=await res.json();m=j.message||m}catch(_){}throw new Error(m)}
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf="",result=null,errMsg=null;
+    for(;;){const {value,done}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      let i;while((i=buf.indexOf("\n\n"))>=0){const chunk=buf.slice(0,i);buf=buf.slice(i+2);
+        const ev=(chunk.match(/^event: (.*)$/m)||[])[1],data=(chunk.match(/^data: (.*)$/m)||[])[1];if(!ev||!data)continue;
+        if(ev==="result")result=JSON.parse(data);else if(ev==="error")errMsg=JSON.parse(data).message;
+        else if(ev==="progress"){const c=JSON.parse(data).chars;if(c)box.innerHTML='<p class="muted">투숭이가 채점표를 쓰는 중… ✏️ '+Math.min(99,Math.round(c/25))+'%</p>'}}}
+    if(errMsg)throw new Error(errMsg);if(!result)throw new Error("채점 결과를 받지 못했어요. 다시 해 주세요.");
+    oHist.unshift({at:Date.now(),q:question,type:qtype,level:result.level,score:result.score});saveOpicHist();
+    oMode=result.score>=70?"good":"idle";showResult(result);
+  }catch(e){box.innerHTML='<p class="muted">'+esc(e.message||"채점하지 못했어요.")+'</p>';oMode="idle"}
+  oBusy=false;renderOpic();renderHome();
+}
+// In the claude.ai preview: ask Claude on the viewer's own account (sample capability).
+const OPIC_RULES=`You are an experienced OPIc (Oral Proficiency Interview - computer) English rater and a friendly coach for a Korean learner.
+The learner's answer is typed or speech-to-text, so do not judge pronunciation, and ignore punctuation, capitalization and obvious transcription slips.
+Rate the answer the way OPIc does: task completion for the question type, length and fluency, sentence complexity and connectors, vocabulary range, and grammar accuracy (especially tense in past-experience questions).
+Be honest about the level, but encouraging. Explanations in Korean; English examples in English. Quote the learner's own words in "original".
+Reply with ONLY one JSON object with exactly these keys:
+{"level": one of "NL","NM","NH","IL","IM1","IM2","IM3","IH","AL",
+ "score": integer 0-100,
+ "monkey_comment": "1-2 short warm Korean sentences spoken by 투숭이, a cute pixel monkey who loves bananas",
+ "summary_ko": "2-3 Korean sentences",
+ "strengths": ["1-3 Korean strings"],
+ "improvements": [{"category": one of "문법","어휘","표현","구성","내용","유창성", "original": "learner's words", "better": "improved English", "why_ko": "short Korean reason"}] (2-5 items),
+ "corrected_answer": "natural English model answer at the target level that keeps the learner's ideas, 120-200 words",
+ "useful_expressions": [{"en": "...", "ko": "..."}] (3-5 items)}`;
+async function gradeWithSample(question,qtype,text,seconds,box){
+  const sample=await window.claude.use("sample");
+  if(!sample)throw new Error("이 미리보기에서는 채점을 쓸 수 없어요. 홈 화면 앱에서 해 주세요.");
+  const prompt=`${OPIC_RULES}
+
+Question type: ${qtype}
+Question: ${question}
+Learner's target level: ${oTarget}
+Answer length: ${seconds?seconds+" seconds, ":""}${text.split(/\s+/).length} words
+
+Learner's answer:
+"""
+${text}
+"""`;
+  try{
+    const r=await sample.json(prompt,{cache:false,onText:({text})=>{box.innerHTML='<p class="muted">투숭이가 채점표를 쓰는 중… ✏️ '+Math.min(99,Math.round(text.length/25))+'%</p>'}});
+    if(!r||typeof r!=="object"||!r.level)throw {code:"bad"};
+    return r;
+  }catch(e){
+    const c=e&&e.code;
+    throw new Error(c==="not_granted"?"Claude 사용을 허용해야 채점할 수 있어요.":c==="rate_limited"?"잠깐 쉬었다가 다시 해 주세요.":"채점하지 못했어요. 다시 한 번 해 주세요.");
+  }
+}
+function showResult(r){
+  const box=$("oResult");
+  box.innerHTML=`<div class="grade"><span class="lvl">${esc(r.level)}</span><span class="score">${Number(r.score)||0}<small> / 100점</small></span></div>
+  <p style="margin:0">${esc(r.summary_ko)}</p>
+  ${(r.strengths||[]).length?`<h2>잘한 점 👍</h2><ul>${r.strengths.map(x=>`<li class="fix"><span class="w" style="color:var(--ink)">${esc(x)}</span></li>`).join("")}</ul>`:""}
+  ${(r.improvements||[]).length?`<h2>이렇게 고쳐 보자 ✏️</h2><ul>${r.improvements.map(x=>`<li class="fix"><span class="cat">${esc(x.category)}</span><span class="o" lang="en">${esc(x.original)}</span><span class="b" lang="en">→ ${esc(x.better)}</span><span class="w">${esc(x.why_ko)}</span></li>`).join("")}</ul>`:""}
+  <div class="toolbar"><h2>투숭이 모범 답변</h2><button type="button" class="link" id="oSpeakModel">🔊 듣기</button></div>
+  <p class="model" lang="en">${esc(r.corrected_answer)}</p>
+  ${(r.useful_expressions||[]).length?`<h2>외워 두면 좋은 표현</h2><ul>${r.useful_expressions.map(x=>`<li class="expr"><b lang="en">${esc(x.en)}</b><span>${esc(x.ko)}</span></li>`).join("")}</ul>`:""}`;
+  box.dataset.say=r.monkey_comment||"";box.dataset.model=r.corrected_answer||"";
+  $("oSpeakModel").addEventListener("click",()=>speak(box.dataset.model));
+}
+function renderOpic(){
+  const [qtype,q]=OPIC_Q[oIdx];
+  $("oType").textContent=qtype;$("oQuestion").textContent=q;$("oNo").textContent=`${oIdx+1} / ${OPIC_Q.length}`;
+  const say=$("oResult").dataset.say;
+  $("oBubble").textContent=oMode==="listen"?"듣고 있어… 천천히 말해도 돼!":oMode==="think"?"음… 채점하는 중!":(!$("oResult").hidden&&say)?say:"질문을 듣고 마이크를 눌러 대답해 봐!";
+  $("oMic").setAttribute("aria-pressed",String(recOn));$("oMicLabel").textContent=recOn?"그만 말하기":"말하기 시작";
+  $("oGrade").disabled=oBusy;
+  $("oTargets").innerHTML=OPIC_TARGETS.map(t=>`<button type="button" data-otarget="${t}" class="${t===oTarget?"on":""}">${t}</button>`).join("");
+  $("oTypes").innerHTML=OPIC_TYPES.map(t=>`<button type="button" data-otype="${esc(t)}" class="${t===oTypeFilter?"on":""}">${esc(t)}</button>`).join("");
+  $("oHistoryPanel").hidden=!oHist.length;
+  $("oHistory").innerHTML=oHist.slice(0,8).map(h=>{const d=new Date(h.at);return`<li class="hist"><span class="muted" style="font-size:18px">${d.getMonth()+1}/${d.getDate()}</span><span class="q" lang="en">${esc(h.q)}</span><span class="l">${esc(h.level)}</span><span class="muted" style="font-size:18px">${h.score}점</span></li>`}).join("");
+}
+$("oMic").addEventListener("click",()=>recOn?stopRec():startRec());
+if(IS_ART){$("oMic").hidden=true;$("oText").placeholder="claude.ai 미리보기에서는 마이크를 쓸 수 없어요. 영어 대답을 글로 적어 보세요.";$("oTime").hidden=true}
+$("oListen").addEventListener("click",()=>speak(OPIC_Q[oIdx][1]));
+$("oNext").addEventListener("click",()=>{if(recOn)stopRec();$("oText").value="";recAcc=0;showRecTime();delete $("oResult").dataset.say;nextQuestion()});
+$("oClear").addEventListener("click",()=>{if(recOn)stopRec();$("oText").value="";recAcc=0;showRecTime()});
+$("oGrade").addEventListener("click",gradeOpic);
+$("oTargets").addEventListener("click",e=>{const b=e.target.closest("[data-otarget]");if(!b)return;oTarget=b.dataset.otarget;try{localStorage.setItem("tt-opic-target",oTarget)}catch(_){}renderOpic()});
+$("oTypes").addEventListener("click",e=>{const b=e.target.closest("[data-otype]");if(!b)return;oTypeFilter=b.dataset.otype;nextQuestion()});
+if("speechSynthesis" in window){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(_){}}
 
 /* ================= home ================= */
 function renderHomePills(){
@@ -670,23 +1107,29 @@ function renderHomePills(){
   const tot=entriesFor(today).reduce((a,e)=>a+e.sec,0);
   $("homeTimerPill").textContent=r?`${r.title} ${r.paused?"멈춤":"하는 중"} · ${fmtClock(elapsedMs())}`:`오늘 기록 ${fmtDur(tot)}`;
 }
-function renderHome(){const d=new Date();$("homeDate").textContent=`${d.getFullYear()}년 ${dlabel(key(d))}`;renderHomePills()}
+function renderOpicPill(){const h=oHist[0];$("homeOpicPill").textContent=h?`최근 ${h.level} · ${h.score}점 · 총 ${oHist.length}번 연습`:"아직 연습 기록이 없어요"}
+function renderHome(){renderOpicPill();renderDiaryPill();const d=new Date();$("homeDate").textContent=`${d.getFullYear()}년 ${dlabel(key(d))}`;renderHomePills()}
 
 /* ================= routing ================= */
-const VIEWS=["home","quest","timer"];
+const VIEWS=["home","menu","quest","timer","opic","diary"];
 function route(){
   const h=location.hash.replace("#","");view=VIEWS.includes(h)?h:"home";
   VIEWS.forEach(v=>$("view-"+v).hidden=v!==view);
+  document.documentElement.classList.toggle("home-mode",view==="home");if(view==="home")sizeMeadow();
   renderAll();window.scrollTo(0,0);if(reduce)frame();
 }
-function renderAll(){renderHome();renderQuest();renderTimer();if(reduce)frame()}
+function renderAll(){renderHome();renderQuest();renderTimer();renderOpic();renderDiary();if(reduce)frame()}
 window.addEventListener("hashchange",route);
 
 scenes.push({cv:$("cvMeadow"),view:"home",kind:()=>"meadow"});
-scenes.push({cv:$("cvHomeQuest"),view:"home",kind:()=>stageOf(bananas(key(new Date()))).mood});
-scenes.push({cv:$("cvHomeTimer"),view:"home",kind:timerKind});
+scenes.push({cv:$("cvHomeQuest"),view:"menu",kind:()=>stageOf(bananas(key(new Date()))).mood});
+scenes.push({cv:$("cvHomeTimer"),view:"menu",kind:timerKind});
 scenes.push({cv:$("cvQuest"),view:"quest",kind:()=>stageOf(bananas(qSel)).mood});
 scenes.push({cv:$("cvTimer"),view:"timer",kind:timerKind});
+scenes.push({cv:$("cvOpic"),view:"opic",kind:()=>"teacher-"+oMode});
+scenes.push({cv:$("cvHomeOpic"),view:"menu",kind:()=>"teacher-idle"});
+scenes.push({cv:$("cvHomeDiary"),view:"menu",kind:()=>"diary"});
+scenes.push({cv:$("cvDiary"),view:"diary",kind:()=>"diary"});
 
 /* ================= events ================= */
 document.addEventListener("click",e=>{
@@ -715,7 +1158,6 @@ document.addEventListener("click",e=>{
   else if(t.id==="tNext"){tSel=shift(tSel,1);renderTimer()}
   else if(t.id==="tToday"){tSel=key(new Date());renderTimer()}
 });
-$("sectionTab").addEventListener("click",()=>{const open=$("modes").hidden;$("modes").hidden=!open;$("sectionTab").setAttribute("aria-expanded",String(open))});
 $("actTitle").addEventListener("keydown",e=>{if(e.key==="Enter"&&!T.running){e.preventDefault();startTimer($("actTitle").value)}});
 let lastDay=key(new Date());
 setInterval(()=>{tickClock();const k=key(new Date());if(k!==lastDay){if(qSel===lastDay)qSel=k;if(tSel===lastDay)tSel=k;lastDay=k;renderAll()}},1000);
@@ -725,11 +1167,13 @@ function applyDoc(id,d){
   if(id==="quests")Q={quests:[...(d.quests||[])].map(q=>({...q})),days:JSON.parse(JSON.stringify(d.days||{}))};
   else if(id==="timer")T={running:d.running?{...d.running}:null};
   else if(id.startsWith("log-"))LOGS[id.slice(4)]=JSON.parse(JSON.stringify(d.entries||[]));
+  else if(id==="diary")DI={events:JSON.parse(JSON.stringify(d.events||[]))};
 }
 function useLocal(msg){
   local=true;store=null;
   try{const raw=localStorage.getItem("tt-quests")||localStorage.getItem("dq-state");if(raw)applyDoc("quests",JSON.parse(raw))}catch(e){}
   try{const raw=localStorage.getItem("tt-timer");if(raw)applyDoc("timer",JSON.parse(raw))}catch(e){}
+  try{const raw=localStorage.getItem("tt-diary");if(raw)applyDoc("diary",JSON.parse(raw))}catch(e){}
   try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith("tt-log-"))applyDoc(k.slice(3),JSON.parse(localStorage.getItem(k)))}}catch(e){}
   ready=true;$("syncNote").textContent=msg;renderAll();
 }
